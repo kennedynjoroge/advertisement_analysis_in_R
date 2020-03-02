@@ -1,0 +1,381 @@
+---
+title: "Crypto_Course_Advertisement"
+author: "Kennedy Njoroge"
+date: "28/02/2020"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+## Business Understanding
+
+A Kenyan entrepreneur has created an online cryptography course and would want to advertise it on her blog. She currently targets audiences originating from various countries. In the past, she ran ads to advertise a related course on the same blog and collected data in the process. 
+
+### Specifying the question
+
+Identify which individuals are most likely to click on her ads based on data collected in the past.
+
+### Metric for success
+
+- Outliers, Anomalies and missing data.
+- Univariate and bivariate analysis
+
+### Understanding the context
+Internet adverstising seeks to deliver promotional marketing materials to consumers. Analysis of target audience is necessary so as to reach the right audience who will see conversion of advert to an order.
+
+### Recording the experimental design
+- Business Understanding
+- Data importation and understanding
+- Exploratory Data Analysis
+- Conclusion
+
+## Import Libraries
+```{r import_libraries, message = FALSE, warning = FALSE}
+#Impor Latex to facilitate PDF export.
+#tinytex::install_tinytex()
+#install.packages("tidyverse",dependencies = TRUE)
+#library(tidyverse)
+```
+
+## Exploratory Data Analysis
+
+### Import the data
+```{r data_import, include=FALSE}
+df_advert = read.csv('advertising.csv')
+df_advert[1:10]
+```
+
+
+### Check Structure of data frame - name, type and preview of data in each column
+
+```{r}
+str(df_advert)
+```
+
+
+Columns are of data type numeric, integers and Factors.
+
+- Numeric
+Daily.Time.Spent.on.Site, Area.Income, Daily.Internet.Usage : They are numeric as their values are numbers which have decimals.
+- Integer
+Age, Male, Cicked.on.Ad,    : Integer as it has whole numbers with no fractions.
+- Factors
+Ad.Topic.Line, City, Country, Timestamp : Are all factors.
+Ad.Topic.Line and timestamp both have 1000 levels meaning it's distinct values per column.
+City has 969 levels.
+Country has 237 meaning data is from 237 countries.
+
+### Check the Columns and rows of the dataframe
+```{r}
+dim(df_advert)
+```
+
+1000 rows and 10 columns.
+
+### Check Null Values
+
+```{r}
+#Count the missing values
+colSums(is.na(df_advert))
+```
+
+No missing values exist in the datasets as all columns are of value zero.
+
+
+### Check Duplicates
+
+```{r}
+anyDuplicated(df_advert)
+```
+
+No duplicates exist.
+
+### Dataframe Summary Description
+
+```{r}
+summary(df_advert)
+```
+### Outliers 
+
+#### a) Daily Time Spent on Site
+
+```{r}
+#A = df_advert[c("Daily.Time.Spent.on.Site", "Age", 'Area.Income','Daily.Internet.Usage', 'Male' , 'Clicked.on.Ad')]
+boxplot(df_advert["Daily.Time.Spent.on.Site"])
+```
+No outliers noted in Daily Time spent on site.
+
+#### b) Age
+
+```{r}
+boxplot(df_advert["Age"])
+```
+No outliers noted in age.
+
+#### c) Area Income
+```{r}
+boxplot(df_advert['Area.Income'])
+```
+Outliers noted.
+
+Display of outlier values
+
+```{r}
+boxplot.stats(df_advert$Area.Income)$out
+```
+
+View other dataframe values with outliers
+
+```{r}
+
+df_advert[df_advert$Area.Income %in% c(17709.98,18819.34,15598.29,15879.10,14548.06,13996.50,14775.50,18368.57),]
+
+#c(17709.98,18819.34,15598.29,15879.10,14548.06,13996.50,14775.50,18368.57)
+```
+
+The low income areas are noted to be cities in Belize, Algeria, Azerbaijan, Tajikistan, Lebanon, El Salvador, Jersey and Luxembourg. These are not developed countries hence it's understandable
+why there are low income outliers. Therebeing, the records will be maintained due to their validity.
+
+#### d) Daily Internet Usage
+
+```{r}
+boxplot(df_advert["Daily.Internet.Usage"])
+```
+
+e) Male
+
+```{r}
+
+boxplot(df_advert["Male"])
+
+```
+
+f) Clicked.on.Ad
+
+```{r}
+
+boxplot(df_advert["Clicked.on.Ad"])
+
+```
+
+
+
+## Feature Engineering
+
+```{r}
+df_advert$day <- format(as.POSIXct(strptime(df_advert$Timestamp,"%Y-%m-%d %H:%M:%S",tz="")) ,format = "%d")
+df_advert$month <- format(as.POSIXct(strptime(df_advert$Timestamp,"%Y-%m-%d %H:%M:%S",tz="")) ,format = "%m")
+```
+
+## Bivariate Analysis
+
+### Mean
+Mean of 
+
+```{r}
+# Mean of the variables
+cat('Age: ',mean(df_advert$Age))
+cat('\nArea.Income: ',mean(df_advert$Area.Income))
+cat('\nDaily Internet Usage: ',mean(df_advert$Daily.Internet.Usage))
+cat('\nMale: ',mean(df_advert$Male))
+cat('\nClicked.on.Ad: ',mean(df_advert$Clicked.on.Ad))
+```
+
+### Median
+
+```{r}
+# Median of the variables
+cat('Age: ',median(df_advert$Age))
+cat('\nArea.Income: ',median(df_advert$Area.Income))
+cat('\nDaily Internet Usage: ',median(df_advert$Daily.Internet.Usage))
+cat('\nMale: ',median(df_advert$Male))
+cat('\nClicked.on.Ad: ',median(df_advert$Clicked.on.Ad))
+
+```
+
+### Mode
+
+```{r}
+# Create the function.
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+cat('Daily.Time.Spent.on.Site: ',getmode(df_advert$Daily.Time.Spent.on.Site))
+cat('\nAge: ',getmode(df_advert$Age))
+cat('\nArea.Income: ',getmode(df_advert$Area.Income))
+cat('\nDaily Internet Usage: ',getmode(df_advert$Daily.Internet.Usage))
+cat('\nAd Topic Line',getmode(df_advert$Ad.Topic.Line))
+cat('\nCity',getmode(df_advert$City))
+cat('\nMale',getmode(df_advert$Male))
+cat('\nCountry',getmode(df_advert$Country)) 
+cat('\nTimestamp',getmode(df_advert$Timestamp))
+cat('\nClicked.on.Ad: ',getmode(df_advert$Clicked.on.Ad))
+```
+
+### Minimum and Maximum
+
+```{r}
+cat('Min Age: ',min(df_advert$Age))
+cat('\nMin Area.Income: ',min(df_advert$Area.Income))
+cat('\nMin Daily Internet Usage: ',min(df_advert$Daily.Internet.Usage))
+cat('\nMin Male: ',min(df_advert$Male))
+cat('\nMin Clicked.on.Ad: ',min(df_advert$Clicked.on.Ad))
+cat('\n')
+cat('\nMax Age: ',max(df_advert$Age))
+cat('\nMax Area.Income: ',max(df_advert$Area.Income))
+cat('\nMax Daily Internet Usage: ',max(df_advert$Daily.Internet.Usage))
+cat('\nMax Male: ',max(df_advert$Male))
+cat('\nMax Clicked.on.Ad: ',max(df_advert$Clicked.on.Ad))
+```
+
+### Range, Variance, Quartile, Standard Deviation
+```{r}
+cat('RANGE: maximum element of the distance \n')
+cat('Age: ',range(df_advert$Age))
+cat('\nArea.Income: ',range(df_advert$Area.Income))
+cat('\nDaily Internet Usage: ',range(df_advert$Daily.Internet.Usage))
+cat('\nMale: ',range(df_advert$Male))
+cat('\nClicked.on.Ad: ',range(df_advert$Clicked.on.Ad))
+cat('\n\n')
+cat('VARIANCE: Is a numerical measure of how the data values is dispersed around the mean\n')
+cat('Age: ',var(df_advert$Age))
+cat('\nArea.Income: ',var(df_advert$Area.Income))
+cat('\nDaily Internet Usage: ',var(df_advert$Daily.Internet.Usage))
+cat('\nMale: ',var(df_advert$Male))
+cat('\nClicked.on.Ad: ',var(df_advert$Clicked.on.Ad))
+cat('\n\n')
+cat('QUARTILE: Lower range, 1st quartile, median, 3rd quartile upper range\n')
+cat('Age: ',quantile(df_advert$Age))
+cat('\nArea.Income: ',quantile(df_advert$Area.Income))
+cat('\nDaily Internet Usage: ',quantile(df_advert$Daily.Internet.Usage))
+cat('\nMale: ',quantile(df_advert$Male))
+cat('\nClicked.on.Ad: ',quantile(df_advert$Clicked.on.Ad))
+
+cat('\n\n')
+cat('STANDARD DEVIATION: Deviation from the mean\n')
+cat('Age: ',sd(df_advert$Age))
+cat('\nArea.Income: ',sd(df_advert$Area.Income))
+cat('\nDaily Internet Usage: ',sd(df_advert$Daily.Internet.Usage))
+cat('\nMale: ',sd(df_advert$Male))
+cat('\nClicked.on.Ad: ',sd(df_advert$Clicked.on.Ad))
+```
+
+
+### Tabular Frequency Distribution
+Selected a few columns which do not have so high distinct distribution 
+```{r}
+cat("Age")
+table(df_advert$Age)
+cat("\nMale")
+table(df_advert$Male)
+cat('\nClicked on Ad')
+table(df_advert$Clicked.on.Ad)
+
+```
+
+Age 31 has the highest distribution of 60 people.
+The dataset also has more non males than males.
+There is equal distribution of people who clicked on the add and those that did not click.
+
+
+### Histogram Frequency Distribution
+
+a) Daily Time Spent on Site
+
+```{r}
+hist(df_advert$Daily.Time.Spent.on.Site)
+```
+The graph is skewed to the left. More people spent time on the website.
+
+
+b) Age
+
+
+```{r}
+hist(df_advert$Age)
+```
+
+b) Area Income
+
+```{r}
+hist(df_advert$Area.Income)
+```
+Income is skewed to the left. Most of the people in the dataset have high income.
+
+
+d) Daily.Internet.Usage
+
+```{r}
+hist(df_advert$Daily.Internet.Usage)
+```
+
+e) Male
+
+```{r}
+hist(df_advert$Male)
+```
+
+f) Clicked on Ad
+
+```{r}
+hist(df_advert$Clicked.on.Ad)
+```
+
+## Bivariate Analysis
+
+### Covariance
+
+
+```{r}
+num_cols <- Filter(is.numeric, df_advert)
+cat('COVARIANCE')
+cov(num_cols)
+cat('\nCORRELATION')
+cor(num_cols)
+```
+Age and  clicked on Ad have a medium positive correlation as it has a value greater than one.
+
+Daily time spent on site and Daily internet usage have strong negative correlation against clicked on Ad.
+
+a) Age  Versus Time Spent On Site
+The covariance of age versus time spent on site is -46.174. It indicates a medium negative linear relationship between the two variables.
+The younger the person is, the more the time spent on site
+
+c) Male versus Clicked on A
+
+The covariance of clicked on Ad versus gender is -0.00950951. It indicates no significant difference between Male versus other genders as far as clicking on Ad.
+
+
+## Scatter Plot
+
+#### a) Daily time spent versus Age
+```{r}
+plot(df_advert$Daily.Time.Spent.on.Site, df_advert$Age, xlab="Daily Time Spent", ylab="Age")
+```
+
+#### b) Clicked on Ad versus Daily time spent
+```{r}
+
+plot(df_advert$Clicked.on.Ad, df_advert$Daily.Time.Spent.on.Site , xlab="Clicked on Ad", ylab="Daily time spent")
+
+```
+The users click on add irrespective of time spent. Hence an advert can be placed at the top of the blog and users will still click it.
+
+
+#### c) Clicked on Ad versus Daily Time Spent
+
+```{r}
+
+plot(df_advert$Clicked.on.Ad, df_advert$Area.Income , xlab="Clicked on Ad", ylab="Area income")
+
+```
+People living in lower income areas clicked on the add. 
+
+## Summary
+- Lower time spent on internet does not limit the clicking of adverts. Hence adverts can be placed on the top of the blog.
+- Target audience can include low income areas.
+- The higher the age, the more the probability of clicking on the ad. Hence target audience can be users in high age groups who have more disposable income.
+
+
